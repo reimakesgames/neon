@@ -26,7 +26,8 @@ local function computeOcclusion(origin, dir)
 		-- local hit = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList, false, true)
 		local RaycastParameters = RaycastParams.new()
 		RaycastParameters.FilterDescendantsInstances = IgnoreList
-		local Result = workspace:Raycast(origin, dir)
+		RaycastParameters.FilterType = Enum.RaycastFilterType.Blacklist
+		local Result = workspace:Raycast(origin, origin + dir, RaycastParameters)
 
 		if not Result then
 			break
@@ -65,21 +66,28 @@ function AutoExposure.update(deltaTime)
 		sunDir = Lighting:GetMoonDirection()
 	end
 
-	local indoorLevel = computeOcclusion(origin, UP)
-	local sunOcclusion = computeOcclusion(origin, sunDir)
+	local indoorLevel = computeOcclusion(origin, UP * 5000)
+	local sunOcclusion = computeOcclusion(origin, sunDir * 5000)
+
+	local SunBlindness = math.clamp(sunDir:Dot(camera.CFrame.LookVector), 0, 1)
+	SunBlindness = (SunBlindness + 2) * 90
+	SunBlindness = -(math.cos(math.rad(SunBlindness)) + 1)
 
 	local indoorLight = getBrightness(Lighting.Ambient)
 	local outdoorLight = getBrightness(Lighting.OutdoorAmbient)
 
 	local strength = 1 - (outdoorLight + ((indoorLight - outdoorLight) * indoorLevel))
-	local target = sunOcclusion * strength * dayLight * 3
+	local target = sunOcclusion * strength * dayLight * 1.5
+	if sunOcclusion == 0 then
+		target = SunBlindness
+	end
 
 	local current = Lighting.ExposureCompensation
 
 	if (current < target) then
 		current = math.min(target, current + deltaTime)
 	elseif (current > target) then
-		current = math.max(target, current - (deltaTime * 2))
+		current = math.max(target, current - deltaTime)
 	end
 
 	Lighting.ExposureCompensation = current
