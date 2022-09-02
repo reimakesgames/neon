@@ -35,6 +35,24 @@ local function FindCurrentEffects()
 	return {Bloom, SunRays}
 end
 
+local function SwapEffects(swapToBuiltIn: boolean)
+	local TempFolder = Lighting:FindFirstChild("NEON_Temporary")
+	local HiddenEffects = TempFolder:GetChildren()
+	local CurrentEffects = FindCurrentEffects()
+	local BuiltInIsHidden = HiddenEffects[1]:FindFirstChild("NEONBuiltIn") and true or false
+	local ShouldSwap = BuiltInIsHidden == swapToBuiltIn
+
+	if ShouldSwap then
+		for _, Effect in CurrentEffects do
+			Effect.Parent = TempFolder
+		end
+
+		for _, Effect in HiddenEffects do
+			Effect.Parent = Lighting
+		end
+	end
+end
+
 local function CreatePostProcessingEffects(effectTable)
 	local CurrentEffects = FindCurrentEffects()
 	local TemporaryFolder = FindTemporaryFolder()
@@ -46,13 +64,18 @@ local function CreatePostProcessingEffects(effectTable)
 	end
 
 	for Class, Properties in effectTable do
-		QuickInstance(Class, Lighting, Properties)
+		local NewEffect = QuickInstance(Class, Lighting, Properties)
+		QuickInstance("StringValue", NewEffect, {Name = "NEONBuiltIn"})
 	end
 end
 
 function Neon.Start()
 	RunService:BindToRenderStep("NEON_AutoExposure", 201, AutoExposure.update)
 	CreatePostProcessingEffects(DefaultEffects)
+end
+
+function Neon.SwapEffects(swapToBuiltIn: boolean)
+	SwapEffects(swapToBuiltIn)
 end
 
 return Neon
