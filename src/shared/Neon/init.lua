@@ -2,6 +2,7 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
 local AutoExposure = require(script.AutoExposure)
+local DepthOfField = require(script.DepthOfField)
 local QuickInstance = require(script.QuickInstance)
 
 local DefaultEffects = {
@@ -14,6 +15,11 @@ local DefaultEffects = {
 	SunRaysEffect = {
 		Intensity = 0.05;
 		Spread = 0.5;
+	};
+
+	DepthOfFieldEffect = {
+		FarIntensity = 0.2;
+		NearIntensity = 0.1;
 	}
 }
 table.freeze(DefaultEffects)
@@ -31,8 +37,9 @@ end
 local function FindCurrentEffects()
 	local Bloom = Lighting:FindFirstChildWhichIsA("BloomEffect")
 	local SunRays = Lighting:FindFirstChildWhichIsA("SunRaysEffect")
+	local DepthOfField = Lighting:FindFirstAncestorWhichIsA("DepthOfFieldEffect")
 
-	return {Bloom, SunRays}
+	return {Bloom, SunRays, DepthOfField}
 end
 
 local function SwapEffects(swapToBuiltIn: boolean)
@@ -70,8 +77,9 @@ local function CreatePostProcessingEffects(effectTable)
 end
 
 function Neon.Start()
-	RunService:BindToRenderStep("NEON_AutoExposure", 201, AutoExposure.update)
 	CreatePostProcessingEffects(DefaultEffects)
+	RunService:BindToRenderStep("NEON_AutoExposure", 201, AutoExposure.update)
+	RunService:BindToRenderStep("NEON_DepthOfField", 202, DepthOfField.update)
 end
 
 function Neon.SwapEffects(swapToBuiltIn: boolean)
