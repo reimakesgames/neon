@@ -4,4 +4,4 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 
 local Neon = require(Shared.Neon)
 
-Neon.ok()
+Neon.Start()
