@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Packages = ReplicatedStorage:WaitForChild("Packages")
 
-local Neon = require(Shared.Neon)
+local Neon = require(Packages.Neon)
 
 Neon.Start()
